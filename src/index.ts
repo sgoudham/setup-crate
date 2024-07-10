@@ -9,7 +9,7 @@ async function main() {
     const versionSpec = core.getInput("version");
     const tool = await setup.checkOrInstallTool(
       { owner, name, versionSpec },
-      { auth: githubToken }
+      { auth: githubToken },
     );
     core.addPath(tool.dir);
     core.info(`Successfully setup ${tool.name} v${tool.version}`);

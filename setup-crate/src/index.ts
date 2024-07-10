@@ -1,10 +1,13 @@
-import * as core from "@actions/core";
-import * as tc from "@actions/tool-cache";
-import * as types from "@octokit/types"
-import { Octokit } from "@octokit/rest";
-import { promises as fs, constants as fs_constants } from "fs";
-import * as path from "path";
-import * as semver from "semver";
+import {
+  constants as fs_constants,
+  promises as fs,
+} from 'fs';
+import * as path from 'path';
+import * as semver from 'semver';
+
+import * as core from '@actions/core';
+import * as tc from '@actions/tool-cache';
+import { Octokit } from '@octokit/rest';
 
 /**
  * @returns {string[]} possible Rust target specifiers for the current platform.
@@ -28,7 +31,7 @@ function getTargets(): string[] {
     }
   }
   throw new Error(
-    `failed to determine any valid targets; arch = ${arch}, platform = ${platform}`
+    `failed to determine any valid targets; arch = ${arch}, platform = ${platform}`,
   );
 }
 
@@ -93,13 +96,13 @@ async function getRelease(tool: Tool, options?: Options): Promise<Release> {
   const octokit = new Octokit(options);
   return octokit
     .paginate(
-      octokit.repos.listReleases,
+      "GET /repos/{owner}/{repo}/releases",
       { owner, repo: name },
       (response, done) => {
         const releases = response.data
-          .map((rel) => {
+          .map((rel): Release | undefined => {
             const asset = rel.assets.find((ass) =>
-              targets.some((target) => ass.name.includes(target))
+              targets.some((target) => ass.name.includes(target)),
             );
             if (asset) {
               return {
@@ -112,19 +115,19 @@ async function getRelease(tool: Tool, options?: Options): Promise<Release> {
           .filter((rel) =>
             rel && versionSpec
               ? semver.satisfies(rel.version, versionSpec)
-              : true
+              : true,
           );
         if (releases.length > 0) {
           done();
         }
         return releases;
-      }
+      },
     )
     .then((releases) => {
       const release = releases.find((release) => release != null);
       if (release === undefined) {
         throw new Error(
-          `no release for ${name} matching version specifier ${versionSpec}`
+          `no release for ${name} matching version specifier ${versionSpec}`,
         );
       }
       return release;
@@ -133,7 +136,7 @@ async function getRelease(tool: Tool, options?: Options): Promise<Release> {
 
 async function handleBadBinaryPermissions(
   tool: Tool,
-  dir: string
+  dir: string,
 ): Promise<void> {
   const { name, bin } = tool;
   if (process.platform !== "win32") {
@@ -164,7 +167,10 @@ async function handleBadBinaryPermissions(
  *
  * @returns the directory containing the tool binary.
  */
-export async function checkOrInstallTool(tool: Tool, options?: Options): Promise<InstalledTool> {
+export async function checkOrInstallTool(
+  tool: Tool,
+  options?: Options,
+): Promise<InstalledTool> {
   const { name, versionSpec } = tool;
 
   // first check if we have previously downloaded the tool
