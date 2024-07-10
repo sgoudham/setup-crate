@@ -21,35 +21,34 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-12, windows-latest]
-        crate:
-          - { owner: casey, name: just }
-          - { owner: Michael-F-Bryan, name: mdbook-linkcheck }
-          - { owner: rossmacarthur, name: sheldon }
-          - { owner: rust-embedded, name: cross }
-          - { owner: rust-lang, name: mdBook }
-          - { owner: rustwasm, name: wasm-bindgen }
-          - { owner: sharkdp, name: hyperfine }
+        repo:
+          - casey/just
+          - Michael-F-Bryan/mdbook-linkcheck
+          - rossmacarthur/sheldon
+          - rust-embedded/cross
+          - rust-lang/mdBook
+          - rustwasm/wasm-bindgen
+          - sharkdp/hyperfine
         include:
           # rossmacarthur/powerpack only ships a macos binary
           - os: macos-latest
-            crate: { owner: rossmacarthur, name: powerpack }
+            repo: rossmacarthur/powerpack
         exclude:
           # rossmacarthur/sheldon does not ship a windows binary
           - os: windows-latest
-            crate: { owner: rossmacarthur, name: sheldon }
+            repo: rossmacarthur/sheldon
 
     runs-on: ${{ matrix.os }}
-    name: test (${{matrix.os}}, ${{ matrix.crate.owner }}/${{ matrix.crate.name }})
+    name: test (${{matrix.os}}, ${{ matrix.repo }})
     steps:
     - uses: actions/checkout@v4
-    - name: Setup ${{ matrix.crate.owner }}/${{ matrix.crate.name }}
+    - name: Setup ${{ matrix.repo }}
       uses: ./
       with:
-        owner: ${{ matrix.crate.owner }}
-        name: ${{ matrix.crate.name }}
+        repo: ${{ matrix.repo }}
       env:
         ACTIONS_STEP_DEBUG: true
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Test
-      run: which $(printf ${{ matrix.crate.name }} | tr '[:upper:]' '[:lower:]')
+      run: which $(printf ${{ matrix.repo }} | awk -F '/' '{print $2}' | tr '[:upper:]' '[:lower:]')
       shell: bash
