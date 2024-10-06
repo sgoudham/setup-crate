@@ -187,10 +187,24 @@ export async function checkOrInstallTool(
     let extractDir;
     if (downloadUrl.endsWith(".zip")) {
       extractDir = await tc.extractZip(artifact);
-    } else {
+      core.debug(`Successfully extracted zip archive for ${name} v${version}`);
+    } else if (downloadUrl.endsWith(".tar.gz") || downloadUrl.endsWith(".tgz")) {
       extractDir = await tc.extractTar(artifact);
+      core.debug(`Successfully extracted tar archive for ${name} v${version}`);
+    } else {
+      core.debug(`Did not find archive to extract for ${name} v${version}, treating downloaded tool as naked binary`);
+
+      extractDir = await fs.mkdir("/tmp/extractions-setup-crate-binaries", { recursive: true });
+      if (!extractDir) {
+        throw new Error("Failed to create temporary directory for binary extraction");
+      }
+
+      const newPath = path.join(extractDir, name);
+      fs.rename(artifact, newPath);
+
+      core.debug(`Successfully moved binary from ${artifact} to ${newPath}`);
+      core.debug(`Successfully extracted binary for ${name} v${version}`);
     }
-    core.debug(`Successfully extracted archive for ${name} v${version}`);
 
     // handle the case where there is a single directory extracted
     const files = await fs.readdir(extractDir);
