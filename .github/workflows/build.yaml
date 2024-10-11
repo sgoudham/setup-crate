@@ -22,6 +22,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-12, windows-latest]
         repo:
+          - catppuccin/whiskers
           - casey/just
           - Michael-F-Bryan/mdbook-linkcheck
           - rossmacarthur/sheldon
