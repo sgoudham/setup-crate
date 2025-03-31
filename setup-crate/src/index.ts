@@ -193,11 +193,19 @@ export async function checkOrInstallTool(
       core.debug(`Successfully extracted tar archive for ${name} v${version}`);
     } else {
       core.debug(`Did not find archive to extract for ${name} v${version}, treating downloaded tool as naked binary`);
+      const extractDirPath = "/tmp/extractions-setup-crate-binaries"
 
-      extractDir = await fs.mkdir("/tmp/extractions-setup-crate-binaries", { recursive: true });
-      core.debug(`extractDir: '${extractDir}'`)
+      try {
+        extractDir = await fs.mkdir(extractDirPath, { recursive: true });
+        core.debug(`extractDir: '${extractDir}'`)
+      } catch (err) {
+        throw new Error(`Failed to create temporary directory for binary extraction: ${err}`);
+      }
+
+      // If running for the second time in the same job, `extractDir` seems to return `undefined` if the path already exists
+      // So we need to assign it to the hardcoded path if it's `undefined`.
       if (!extractDir) {
-        throw new Error("Failed to create temporary directory for binary extraction");
+        extractDir = extractDirPath;
       }
 
       const newPath = path.join(extractDir, name);
