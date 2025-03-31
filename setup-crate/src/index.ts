@@ -195,6 +195,7 @@ export async function checkOrInstallTool(
       core.debug(`Did not find archive to extract for ${name} v${version}, treating downloaded tool as naked binary`);
 
       extractDir = await fs.mkdir("/tmp/extractions-setup-crate-binaries", { recursive: true });
+      core.debug(`extractDir: '${extractDir}'`)
       if (!extractDir) {
         throw new Error("Failed to create temporary directory for binary extraction");
       }
